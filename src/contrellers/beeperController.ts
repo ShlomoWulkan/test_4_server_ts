@@ -1,17 +1,18 @@
 import express, { Router , Request, Response } from 'express';
 import NewBeeperDto from '../DTO/newBeeperDto';
-import UserService from '../services/beeperService';
-import User from '../models/beeperModel';
+import BeeperService from '../services/beeperService';
+import Beeper from '../models/beeperModel';
+import e from 'express';
 const router: Router = express.Router();
 
-router.post('/register', async (
+router.post('/', async (
     req: Request<any, any, NewBeeperDto>, 
     res: Response
 ): Promise<void> => {
     try {
-        const result = await UserService.createNewUser(req.body);
+        const result: boolean = await BeeperService.createNewBeeper(req.body);
         if (result) {
-            res.status(200).json({
+            res.status(201).json({
             error: false,
             message: 'Success',
             data: req.body
@@ -31,12 +32,12 @@ router.post('/register', async (
     }
 })
 
-router.get('/:id', async (
+router.get('/', async (
     req: Request, 
     res: Response
-): Promise<User | undefined> => {
+): Promise<Beeper[] | undefined> => {
+    const result: Beeper[] = await BeeperService.getAllBeepers() as Beeper[];
     try {
-        const result = await UserService.getUser(req.params.id);
         if (result) {
             res.status(200).json({
             error: false,
@@ -59,15 +60,71 @@ router.get('/:id', async (
     }
 })
 
-router.post('/follow', async (req: Request, res: Response): Promise<void> => {
+router.get('/:id', async (
+    req: Request, 
+    res: Response
+): Promise<Beeper | undefined> => {
     try {
-        const result = await UserService.createFollowUser(req.body.userId, req.body.followerId);
+        const result: Beeper = await BeeperService.getOneBeeper(parseInt(req.params.id)) as Beeper;
         if (result) {
             res.status(200).json({
             error: false,
             message: 'Success',
-            data: req.body,
-            result
+            data: result
+            })
+        }   
+        else {
+            res.status(500).json({ 
+                error: true,
+                message: 'Failed'         
+            });
+        }  
+        return result;
+    } catch (error) {
+        res.status(400).json({ 
+            error: true,
+            message: error         
+        });
+    }
+})
+
+router.put('/:id/status', async (req: Request, res: Response): Promise<void> => {
+    try {
+        let result: boolean;
+        if (!req.body.latitude || !req.body.longitude) {
+            result = await BeeperService.updateBeeperStatus(parseInt(req.params.id));
+        }
+        else {
+            result = await BeeperService.updateBeeperStatus(parseInt(req.params.id), req.body.latitude, req.body.longitude);
+        }
+        if (result) {
+            res.status(200).json({
+            error: false,
+            message: 'Success',
+            data: result
+            })
+        } else {
+            res.status(500).json({ 
+                error: true,
+                message: 'Failed'         
+            });
+        }
+    } catch (error) {
+        res.status(400).json({ 
+            error: true,
+            message: error         
+        });
+    }
+});
+
+router.delete('/:id', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const result = await BeeperService.deleteBeeper(parseInt(req.params.id));
+        if (result) {
+            res.status(200).json({
+            error: false,
+            message: 'Success',
+            data: req.body
             })
         } else {
             res.status(500).json({ 
@@ -83,67 +140,28 @@ router.post('/follow', async (req: Request, res: Response): Promise<void> => {
     }
 })
 
-router.get('/search', async (req: Request, res: Response): Promise<void> => {
+router.get('/status/:status', async (req: Request, res: Response): Promise<Beeper[] | undefined> => {
     try {
-        res.status(200).json({
+        const result = await BeeperService.getBeepersByStatus(req.params.status);
+        if (result) {
+            res.status(200).json({
             error: false,
             message: 'Success',
-            data: req.body
-        })
+            data: result
+            })
+        } else {
+            res.status(500).json({ 
+                error: true,
+                message: 'Failed'         
+            });
+        }
+        return result;
     } catch (error) {
-        res.status(500).json({ 
+        res.status(400).json({ 
             error: true,
             message: error         
         });
     }
 })
 
-// protected route
-router.get('/profile', async (req: Request, res: Response): Promise<void> => {
-    try {
-        res.status(200).json({
-            error: false,
-            message: 'Success',
-            data: req.body
-        })
-    } catch (error) {
-        res.status(500).json({ 
-            error: true,
-            message: error         
-        });
-    }
-})
-
-// protected route
-router.get('/followers', async (req: Request, res: Response): Promise<void> => {
-    try {
-        res.status(200).json({
-            error: false,
-            message: 'Success',
-            data: req.body
-        })
-    } catch (error) {
-        res.status(500).json({ 
-            error: true,
-            message: error         
-        });
-    }
-})
-
-// protected route
-router.get('/following', async (req: Request, res: Response): Promise<void> => {
-    try {
-        res.status(200).json({
-            error: false,
-            message: 'Success',
-            data: req.body
-        })
-    } catch (error) {
-        res.status(500).json({ 
-            error: true,
-            message: error         
-        });
-    }
-})
-
-export default router
+export default router;
