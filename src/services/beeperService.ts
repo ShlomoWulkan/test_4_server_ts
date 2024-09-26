@@ -58,9 +58,8 @@ class BeeperService {
                 break;        
             default:
                 break;
-        }
-        const result: boolean = await saveFileData('beepers', beepers);
-        
+        }        
+        const result: boolean = await saveFileData('beepers', beepers);       
         if (beeper.status === 'deployed') {
             beeper = await explosion(beeper);
             return await saveFileData('beepers', beepers);
@@ -72,7 +71,7 @@ class BeeperService {
         const beepers: Beeper[] = await getFileData<Beeper>('beepers') as Beeper[];
         if (!beepers)  return undefined;
         return beepers.filter(beeper => beeper.status === status);
-    }
+    }    
 }
    
 
