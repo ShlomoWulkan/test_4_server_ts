@@ -91,12 +91,21 @@ router.get('/:id', async (
 router.put('/:id/status', async (req: Request, res: Response): Promise<void> => {
     try {
         let result: boolean;
-        if (!req.body.latitude || !req.body.longitude) {
+        if (req.body.status === String) {
+            if (!req.body.latitude || !req.body.longitude) {
             result = await BeeperService.updateBeeperStatus(parseInt(req.params.id));
+            } else {
+            result = await BeeperService.updateBeeperStatus(parseInt(req.params.id), req.body.latitude, req.body.longitude);
+            }        
         }
         else {
-            result = await BeeperService.updateBeeperStatus(parseInt(req.params.id), req.body.latitude, req.body.longitude);
+            if (!req.body.latitude || !req.body.longitude) {
+            result = await BeeperService.updateBeeperStatus(parseInt(req.params.id), req.body.status);
         }
+            else {
+            result = await BeeperService.updateBeeperStatus(parseInt(req.params.id), req.body.status, req.body.latitude, req.body.longitude);
+            }
+        }        
         if (result) {
             res.status(200).json({
             error: false,
