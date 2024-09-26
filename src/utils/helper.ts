@@ -7,6 +7,7 @@ const handleStatusInBody =  async (beeper: Beeper, beepers: Beeper[], status: st
                 beeper.latitude = latitude!;
                 beeper.longitude = longitude!;  
                 beeper.status = status;
+                await saveFileData('beepers', beepers);
                 beeper = await explosion(beeper);
                 return await saveFileData('beepers', beepers);              
             }
@@ -32,11 +33,6 @@ const handleStatusNotInBody = async (beeper: Beeper, beepers: Beeper[], latitude
             default:
                 break;
         }        
-        // const result: boolean = await saveFileData('beepers', beepers);       
-        // if (beeper.status === 'deployed') {
-        //     beeper = await explosion(beeper);
-        //     return await saveFileData('beepers', beepers);
-        // }
         return beeper;
 }
 

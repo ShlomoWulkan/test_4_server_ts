@@ -44,42 +44,16 @@ class BeeperService {
         let beeper = beepers.find(beeper => beeper.id === id);
         if (!beeper)  return false;
         if (status)  {
-        // return await handleStatusInBody(beeper, beepers, status, latitude, longitude);
-         if (status === 'deployed') {            
-                beeper.latitude = latitude!;
-                beeper.longitude = longitude!;  
-                beeper.status = status;
-                await saveFileData('beepers', beepers);
-                beeper = await explosion(beeper);
-                return await saveFileData('beepers', beepers);              
-            }
-            beeper.status = status;
-            return await saveFileData('beepers', beepers);
-        } else {
-        switch (beeper.status) {
-            case 'manufactured':
-                beeper.status = 'assembled';
-                break;
-
-            case 'assembled':
-                beeper.status = 'shipped';
-                break;
-
-            case 'shipped':
-                beeper.status = 'deployed';
-                beeper.latitude = latitude!;
-                beeper.longitude = longitude!;
-                break;        
-            default:
-                break;
+        await handleStatusInBody(beeper, beepers, status, latitude, longitude);
+        } else {     
+        await handleStatusNotInBody(beeper, beepers, latitude, longitude);       
+        await saveFileData('beepers', beepers); 
+        }      
+        if (beeper.status || status === 'deployed') {
+            await handleStatusIsDeployed(beeper, beepers);
         }        
-        const result: boolean = await saveFileData('beepers', beepers);       
-        if (beeper.status === 'deployed') {
-            beeper = await explosion(beeper);
-            return await saveFileData('beepers', beepers);
-        }
-        return result;
-        }
+        return await saveFileData('beepers', beepers); 
+       
     }
 
     public static async getBeepersByStatus(status: string): Promise<Beeper[] | undefined> {
